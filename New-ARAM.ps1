@@ -8,7 +8,7 @@ function New-ARAM {
     [string[]]$red = New-Object int[] 15;
     [string[]]$blueBan = New-Object int[] 3;
     [string[]]$redBan = New-Object int[] 3;
-    [hashtable]$champHash = Import-Clixml {Champs.xml Location}
+    [hashtable]$champHash = Import-Clixml $PSScriptRoot\Champs.xml
     [int]$numChamps = $champHash.Count
 
     function Get-Champ {
@@ -79,7 +79,7 @@ function New-ARAM {
         )
         $champName = read-host "What is the name of the new Champion?"
         $hash.Add($number, $champName)
-        $hash | Export-Clixml {Champs.xml Location}
+        $hash | Export-Clixml $PSScriptRoot\Champs.xml
         Break
     }
 
