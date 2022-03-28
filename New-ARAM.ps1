@@ -1,5 +1,6 @@
 function New-ARAM {
     param (
+        [switch]$NoBans,
         [switch]$AddChamp,
         [switch]$LastChamp
     )
@@ -87,18 +88,20 @@ function New-ARAM {
         New-Champ
     }
 
-    $blueBan[0] = read-host "What Champion do you ban for Blue 1?"
-    $redBan[0] = read-host "What Champion do you ban for Red 1?"   
-    $redBan[1] = read-host "What Champion do you ban for Red 2?"   
-    $blueBan[1] = read-host "What Champion do you ban for Blue 2?"   
-    $blueBan[2] = read-host "What Champion do you ban for Blue 3?"   
-    $redBan[2] = read-host "What Champion do you ban for Red 3?"
-    
-    foreach ($item in $blueBan) {
-        Remove-Champ $item
-    }
-    foreach ($item in $redBan) {
-        Remove-Champ $item
+    if (!$NoBans) {
+        $blueBan[0] = read-host "What Champion do you ban for Blue 1?"
+        $redBan[0] = read-host "What Champion do you ban for Red 1?"   
+        $redBan[1] = read-host "What Champion do you ban for Red 2?"   
+        $blueBan[1] = read-host "What Champion do you ban for Blue 2?"   
+        $blueBan[2] = read-host "What Champion do you ban for Blue 3?"   
+        $redBan[2] = read-host "What Champion do you ban for Red 3?"  
+        
+        foreach ($item in $blueBan) {
+            Remove-Champ $item
+        }
+        foreach ($item in $redBan) {
+            Remove-Champ $item
+        }
     }
 
     $blueChampHash = $champHash.Clone()
