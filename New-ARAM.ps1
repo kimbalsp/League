@@ -1,44 +1,20 @@
 function New-ARAM {
     param (
-        [switch]$NoBans,
-        [switch]$AddChamp,
-        [switch]$LastChamp
+        [switch]$NoBans
     )
 
-    [string[]]$blue = New-Object int[] 15;
-    [string[]]$red = New-Object int[] 15;
-    [string[]]$blueBan = New-Object int[] 3;
-    [string[]]$redBan = New-Object int[] 3;
-    [hashtable]$champHash = Import-Clixml $PSScriptRoot\Champs.xml
-    [int]$numChamps = $champHash.Count
-
-    function Get-Champ {
-        param (
-            [int]$number = $numChamps
-        )
-        Get-Random -Maximum $numChamps
-    }
-
-    function Find-Champ {
-        [CmdletBinding()]
-        param (
-            [string]$champName,
-            [int]$number = $numChamps,
-            [hashtable]$hash = $champHash
-        )
-        foreach($h in $hash.Keys) {
-            if($hash[$h] -eq $champName){
-                return $h;
-            }
-        }
-    }
+    [string[]]$Blue = New-Object int[] 15;
+    [string[]]$Red = New-Object int[] 15;
+    [string[]]$Bans = New-Object int[] 6;
+    $ChampList = (Invoke-RestMethod -Uri http://ddragon.leagueoflegends.com/cdn/12.6.1/data/en_US/champion.json).data
+    [int]$NumChamps = ($champList.psobject.properties | Measure-Object).Count
 
     function Remove-Champ {
         param (
-            [string]$champName
+            [string]$champName,
+            $champs
         )
-        [int]$champNumber = Find-Champ $champName
-        $champHash.Remove($champNumber);
+        $champs.psobject.properties.Remove($champName);
     }
 
     function Set-Champ {
@@ -46,82 +22,51 @@ function New-ARAM {
             $array,
             [int]$index = 0,
             [int]$iteration = 5,
-            [hashtable]$hash = $champHash
+            $champs
         )
         while ($index -lt $iteration) {
-            $n = Get-Champ
-            if ($hash[$n]) {
-                $array[$index] = $hash[$n];
-                $hash.Remove($n);
+            $champ = $champs.psobject.properties | Select-Object -Index (Get-Random -Maximum $numChamps)
+            if($champ) {    
+                $array[$index] = $champ.Value.Name;
+                Remove-Champ -champName $champ.Name -champs $champs;
                 $index++;
-            } else {
             }
         }
     }
 
-    function Get-LastChamp {
-        param (
-            [int]$number = $numChamps,
-            [hashtable]$hash = $champHash
-        )
-        write-host "The last champ added was " $hash[($number - 1)]
-        Write-Host "The current champion count is " $number
-    }
-
-    if ($LastChamp) {
-        Get-LastChamp
-        Break
-    }
-
-    function New-Champ {
-        param (
-            [int]$number = $numChamps,
-            [hashtable]$hash = $champHash
-        )
-        $champName = read-host "What is the name of the new Champion?"
-        $hash.Add($number, $champName)
-        $hash | Export-Clixml $PSScriptRoot\Champs.xml
-        Break
-    }
-
-    if ($addChamp) {
-        New-Champ
-    }
-
     if (!$NoBans) {
-        $blueBan[0] = read-host "What Champion do you ban for Blue 1?"
-        $redBan[0] = read-host "What Champion do you ban for Red 1?"   
-        $redBan[1] = read-host "What Champion do you ban for Red 2?"   
-        $blueBan[1] = read-host "What Champion do you ban for Blue 2?"   
-        $blueBan[2] = read-host "What Champion do you ban for Blue 3?"   
-        $redBan[2] = read-host "What Champion do you ban for Red 3?"  
+        $Bans[0] = read-host "What Champion do you ban for Blue 1?";
+        $Bans[1] = read-host "What Champion do you ban for Red 1?";
+        $Bans[2] = read-host "What Champion do you ban for Red 2?";
+        $Bans[3] = read-host "What Champion do you ban for Blue 2?";   
+        $Bans[4] = read-host "What Champion do you ban for Blue 3?";   
+        $Bans[5] = read-host "What Champion do you ban for Red 3?";  
         
-        foreach ($item in $blueBan) {
-            Remove-Champ $item
-        }
-        foreach ($item in $redBan) {
-            Remove-Champ $item
+        foreach ($champ in $Bans) {
+            Remove-Champ -champName $champ -champs $champList;
         }
     }
+    
+    $BlueChampList = $ChampList.psobject.Copy();
+    $RedChampList = $ChampList.psobject.Copy();
+    
+    Set-Champ $Blue -iteration $Blue.Count -champs $BlueChampList
+    Set-Champ $Red -iteration $Red.Count -champs $RedChampList
 
-    $blueChampHash = $champHash.Clone()
-    $redChampHash = $champHash.Clone()
+    Clear-Host
 
-    Set-Champ $blue -iteration $blue.Count -hash $blueChampHash
-    Set-Champ $red -iteration $red.Count -hash $redChampHash
+    Write-Host "";
+    write-host "Blue Team Initial Picks:";
+    $blue[0..4];
+    Write-Host "";
+    Write-Host "Blue Team Bench:";
+    $blue[5..14];
 
-    Write-Host ""
-    write-host "Blue Team Initial Picks:"
-    $blue[0..4]
-    Write-Host ""
-    Write-Host "Blue Team Bench:"
-    $blue[5..14]
-
-    Write-Host ""
-    Write-Host ""
-    write-host "Red Team Initial Picks:"
-    $red[0..4]
-    Write-Host ""
-    Write-Host "Red Team Bench:"
-    $red[5..14]
+    Write-Host "";
+    Write-Host "";
+    write-host "Red Team Initial Picks:";
+    $red[0..4];
+    Write-Host "";
+    Write-Host "Red Team Bench:";
+    $red[5..14];
 }
