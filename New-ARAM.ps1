@@ -6,7 +6,7 @@ function New-ARAM {
     [string[]]$Blue = New-Object int[] 15;
     [string[]]$Red = New-Object int[] 15;
     [string[]]$Bans = New-Object int[] 6;
-    $ChampList = (Invoke-RestMethod -Uri http://ddragon.leagueoflegends.com/cdn/12.6.1/data/en_US/champion.json).data
+    $ChampList = (Invoke-RestMethod -Uri http://ddragon.leagueoflegends.com/cdn/13.1.1/data/en_US/champion.json).data
     [int]$NumChamps = ($champList.psobject.properties | Measure-Object).Count
 
     function Remove-Champ {
